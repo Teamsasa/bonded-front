@@ -7,7 +7,7 @@ const Callback: React.FC = () => {
   useEffect(() => {
     const fetchTokens = async (code: string) => {
       const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID;
-	  const clientSecret = import.meta.env.VITE_COGNITO_CLIENT_SECRET;
+      const clientSecret = import.meta.env.VITE_COGNITO_CLIENT_SECRET;
       const redirectUri = import.meta.env.VITE_COGNITO_REDIRECT_URI;
       const tokenUrl = import.meta.env.VITE_COGNITO_TOKEN_URL;
 

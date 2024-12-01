@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const Home: React.FC = () => {
   const loginUrl = import.meta.env.VITE_COGNITO_LOGIN_URL;
