@@ -9,6 +9,7 @@ export default defineConfig({
       output: {
         manualChunks: undefined,
       },
+      external: ["index.css"],
     },
   },
   envDir: ".",
