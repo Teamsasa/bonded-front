@@ -13,12 +13,5 @@ export const useAuth = () => {
     window.location.href = import.meta.env.VITE_COGNITO_LOGIN_URL;
   };
 
-  const logout = () => {
-    sessionStorage.removeItem("access_token");
-    sessionStorage.removeItem("id_token");
-    sessionStorage.removeItem("refresh_token");
-    setIsAuthenticated(false);
-  };
-
-  return { isAuthenticated, login, logout };
+  return { isAuthenticated, login};
 }; 
