@@ -172,7 +172,7 @@ const Home: React.FC = () => {
                 setNewEvent({ ...newEvent, startTime: e.target.value })
               }
               sx={{ mt: 2 }}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
             />
             <TextField
               fullWidth
@@ -183,7 +183,7 @@ const Home: React.FC = () => {
                 setNewEvent({ ...newEvent, endTime: e.target.value })
               }
               sx={{ mt: 2 }}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true }, input: { type: 'datetime-local' } }}
             />
             <TextField
               fullWidth
