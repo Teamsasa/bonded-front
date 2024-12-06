@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Typography,
 } from "@mui/material";
 import { useCalendar } from "../hooks/useCalendar";
 import { Event, Calendar } from "../types";
@@ -131,16 +132,26 @@ const Home: React.FC = () => {
           </Box>
         )}
 
-        <FullCalendar
-          plugins={[dayGridPlugin]}
-          initialView="dayGridMonth"
-          locale="ja"
-          events={selectedCalendarData?.events.map((event: Event) => ({
-            title: event.title,
-            start: event.startTime,
-            end: event.endTime,
-          }))}
-        />
+        {selectedCalendarData && (
+          <FullCalendar
+            plugins={[dayGridPlugin]}
+            initialView="dayGridMonth"
+            locale="ja"
+            events={selectedCalendarData.events.map((event: Event) => ({
+              title: event.title,
+              start: event.startTime,
+              end: event.endTime,
+            }))}
+          />
+        )}
+
+        {isAuthenticated && !selectedCalendar && (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography color="textSecondary">
+              カレンダーを選択してください
+            </Typography>
+          </Box>
+        )}
 
         <CalendarForm
           open={isCreateCalendarOpen}
