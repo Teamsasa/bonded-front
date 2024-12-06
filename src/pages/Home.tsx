@@ -19,9 +19,10 @@ import { CalendarSelector } from "../components/CalendarSelector";
 import { useAuth } from "../hooks/useAuth";
 import GoogleIcon from "@mui/icons-material/Google";
 import { Button as MuiButton, styled } from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 const Home: React.FC = () => {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, logout } = useAuth();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -99,7 +100,7 @@ const Home: React.FC = () => {
           >
             イベントを作成
           </Button>
-          {!isAuthenticated && (
+          {!isAuthenticated ? (
             <GoogleLoginButton
               variant="contained"
               startIcon={<GoogleIcon />}
@@ -107,6 +108,15 @@ const Home: React.FC = () => {
             >
               Googleでログイン
             </GoogleLoginButton>
+          ) : (
+            <Button
+              variant="outlined"
+              startIcon={<LogoutIcon />}
+              onClick={logout}
+              color="error"
+            >
+              ログアウト
+            </Button>
           )}
         </Box>
 
