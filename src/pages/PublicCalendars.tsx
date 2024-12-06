@@ -11,18 +11,28 @@ import {
 import { useCalendar } from "../hooks/useCalendar";
 import { ErrorSnackbar } from "../components/ErrorSnackbar";
 import { Calendar } from "../types";
+import { useNavigate } from "react-router-dom";
 
 const PublicCalendars: React.FC = () => {
   const { getPublicCalendars } = useCalendar();
   const { data: publicCalendars } = getPublicCalendars();
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
-        <Typography variant="h4" sx={{ mb: 4 }}>
-          公開カレンダー一覧
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Typography variant="h4">
+            公開カレンダー一覧
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/')}
+          >
+            マイカレンダーへ戻る
+          </Button>
+        </Box>
         <Grid container spacing={3}>
           {publicCalendars?.map((calendar: Calendar) => (
             <Grid item xs={12} sm={6} md={4} key={calendar.calendarId}>

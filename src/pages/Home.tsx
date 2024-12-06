@@ -19,6 +19,7 @@ import { CalendarSelector } from "../components/CalendarSelector";
 import { useAuth } from "../hooks/useAuth";
 import GoogleIcon from "@mui/icons-material/Google";
 import { Button as MuiButton, styled } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
   const { isAuthenticated, login } = useAuth();
@@ -40,6 +41,8 @@ const Home: React.FC = () => {
   const userId = "dummy-user-id";
   const { data: userCalendars } = getUserCalendars(userId);
   const { data: publicCalendars } = getPublicCalendars();
+
+  const navigate = useNavigate();
 
   const handleCreateCalendar = async (data: Partial<Calendar>) => {
     try {
@@ -98,6 +101,12 @@ const Home: React.FC = () => {
             onClick={handleCreateEventClick}
           >
             イベントを作成
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/public-calendars')}
+          >
+            公開カレンダー一覧へ
           </Button>
           {!isAuthenticated && (
             <GoogleLoginButton
