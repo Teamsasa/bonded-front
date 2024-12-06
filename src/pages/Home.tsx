@@ -16,8 +16,12 @@ import { Event, Calendar } from "../types";
 import { ErrorSnackbar } from "../components/ErrorSnackbar";
 import { CalendarForm } from "../components/CalendarForm";
 import { CalendarSelector } from "../components/CalendarSelector";
+import { useAuth } from "../hooks/useAuth";
+import GoogleIcon from "@mui/icons-material/Google";
+import { Button as MuiButton, styled } from "@mui/material";
 
 const Home: React.FC = () => {
+  const { isAuthenticated, login } = useAuth();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -63,29 +67,60 @@ const Home: React.FC = () => {
     (calendar) => calendar.calendarId === selectedCalendar,
   );
 
+  const handleCreateCalendarClick = () => {
+    if (!isAuthenticated) {
+      setError("カレンダーを作成するにはログインが必要です");
+      return;
+    }
+    setIsCreateCalendarOpen(true);
+  };
+
+  const handleCreateEventClick = () => {
+    if (!isAuthenticated) {
+      setError("イベントを作成するにはログインが必要です");
+      return;
+    }
+    setIsCreateEventOpen(true);
+  };
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
           <Button
             variant="contained"
-            onClick={() => setIsCreateCalendarOpen(true)}
+            onClick={handleCreateCalendarClick}
           >
             カレンダーを作成
           </Button>
           <Button
             variant="contained"
-            onClick={() => setIsCreateEventOpen(true)}
+            onClick={handleCreateEventClick}
           >
             イベントを作成
           </Button>
+          {!isAuthenticated && (
+            <GoogleLoginButton
+              variant="contained"
+              startIcon={<GoogleIcon />}
+              onClick={login}
+            >
+              Googleでログイン
+            </GoogleLoginButton>
+          )}
         </Box>
 
-        <CalendarSelector
-          calendars={userCalendars || []}
-          selectedCalendarId={selectedCalendar}
-          onCalendarChange={handleCalendarChange}
-        />
+        {isAuthenticated ? (
+          <CalendarSelector
+            calendars={userCalendars || []}
+            selectedCalendarId={selectedCalendar}
+            onCalendarChange={handleCalendarChange}
+          />
+        ) : (
+          <Box sx={{ mb: 2 }}>
+            {publicCalendars?.length ? "公開カレンダー一覧" : "公開カレンダーはありません"}
+          </Box>
+        )}
 
         <FullCalendar
           plugins={[dayGridPlugin]}
@@ -179,5 +214,14 @@ const Home: React.FC = () => {
     </Container>
   );
 };
+
+const GoogleLoginButton = styled(MuiButton)(({ theme }) => ({
+  backgroundColor: "#fff",
+  color: "#757575",
+  border: "1px solid #ddd",
+  "&:hover": {
+    backgroundColor: "#f1f1f1",
+  },
+}));
 
 export default Home;
