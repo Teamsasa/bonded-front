@@ -65,18 +65,6 @@ export const CalendarForm: React.FC<CalendarFormProps> = ({
           label="公開カレンダー"
           sx={{ mt: 2 }}
         />
-        <Autocomplete
-          multiple
-          options={users}
-          getOptionLabel={(option) => option.displayName}
-          value={formData.users || []}
-          onChange={(_, newValue) =>
-            setFormData({ ...formData, users: newValue })
-          }
-          renderInput={(params) => (
-            <TextField {...params} label="共有するユーザー" sx={{ mt: 2 }} />
-          )}
-        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>キャンセル</Button>
