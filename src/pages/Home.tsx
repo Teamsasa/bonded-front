@@ -22,6 +22,7 @@ import GoogleIcon from "@mui/icons-material/Google";
 import { Button as MuiButton, styled } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { DefaultCalendarDialog } from '../components/DefaultCalendarDialog';
+import { InviteUserDialog } from '../components/InviteUserDialog';
 
 const Home: React.FC = () => {
   const { isAuthenticated, login, currentUser } = useAuth();
@@ -37,6 +38,7 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCalendar, setSelectedCalendar] = useState<string | null>(null);
   const [showDefaultCalendarDialog, setShowDefaultCalendarDialog] = useState(false);
+  const [isInviteUserOpen, setIsInviteUserOpen] = useState(false);
 
   const {
     getUserCalendars,
@@ -45,6 +47,7 @@ const Home: React.FC = () => {
     createEvent,
     createDefaultCalendar,
     getCalendarEvents,
+    inviteUser,
   } = useCalendar();
 
   const userId = "dummy-user-id";
@@ -122,6 +125,26 @@ const Home: React.FC = () => {
     return userAccess?.accessLevel === 'EDITOR';
   };
 
+  const hasInvitePermission = (calendarId: string) => {
+    const calendar = userCalendars?.find(cal => cal.calendarId === calendarId);
+    if (!calendar || !currentUser) return false;
+    return calendar.ownerUserId === currentUser.userId;
+  };
+
+  const handleInviteUser = async (userId: string, accessLevel: string) => {
+    if (!selectedCalendar) return;
+    
+    try {
+      await inviteUser.mutateAsync({
+        calendarId: selectedCalendar,
+        userId,
+        accessLevel,
+      });
+    } catch (error) {
+      setError('ユーザーの招待に失敗しました');
+    }
+  };
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
@@ -132,6 +155,14 @@ const Home: React.FC = () => {
           {selectedCalendar && hasEditPermission(selectedCalendar) && (
             <Button variant="contained" onClick={handleCreateEventClick}>
               イベントを作成
+            </Button>
+          )}
+          {selectedCalendar && hasInvitePermission(selectedCalendar) && (
+            <Button
+              variant="contained"
+              onClick={() => setIsInviteUserOpen(true)}
+            >
+              ユーザーを招待
             </Button>
           )}
           <Button
@@ -265,6 +296,12 @@ const Home: React.FC = () => {
         <DefaultCalendarDialog
           open={showDefaultCalendarDialog}
           onSubmit={handleCreateDefaultCalendar}
+        />
+
+        <InviteUserDialog
+          open={isInviteUserOpen}
+          onClose={() => setIsInviteUserOpen(false)}
+          onSubmit={handleInviteUser}
         />
 
         <ErrorSnackbar

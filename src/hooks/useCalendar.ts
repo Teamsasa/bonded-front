@@ -148,6 +148,26 @@ export const useCalendar = () => {
     },
   });
 
+  const inviteUser = useMutation({
+    mutationFn: async ({
+      calendarId,
+      userId,
+      accessLevel,
+    }: {
+      calendarId: string;
+      userId: string;
+      accessLevel: string;
+    }) => {
+      return apiClient.post(`/calendar/${calendarId}/invite`, {
+        userId,
+        accessLevel,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["calendars"] });
+    },
+  });
+
   return {
     getUserCalendars,
     createCalendar,
@@ -160,5 +180,6 @@ export const useCalendar = () => {
     editEvent,
     deleteEvent,
     createDefaultCalendar,
+    inviteUser,
   };
 };
