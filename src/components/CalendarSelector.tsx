@@ -1,5 +1,12 @@
 import React from "react";
-import { FormControl, InputLabel, Select, MenuItem, Box, Button } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
+  Button,
+} from "@mui/material";
 import { Calendar } from "../types";
 
 interface CalendarSelectorProps {
@@ -18,7 +25,7 @@ export const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   onUnfollow,
 }) => {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
       <FormControl fullWidth>
         <InputLabel>カレンダー</InputLabel>
         <Select
@@ -33,18 +40,20 @@ export const CalendarSelector: React.FC<CalendarSelectorProps> = ({
           ))}
         </Select>
       </FormControl>
-      {selectedCalendarId && calendars.find(c => 
-        c.calendarId === selectedCalendarId && 
-        c.ownerUserId !== currentUserId
-      ) && (
-        <Button 
-          onClick={() => onUnfollow(selectedCalendarId)}
-          variant="outlined"
-          color="error"
-        >
-          アンフォロー
-        </Button>
-      )}
+      {selectedCalendarId &&
+        calendars.find(
+          (c) =>
+            c.calendarId === selectedCalendarId &&
+            c.ownerUserId !== currentUserId,
+        ) && (
+          <Button
+            onClick={() => onUnfollow(selectedCalendarId)}
+            variant="outlined"
+            color="error"
+          >
+            アンフォロー
+          </Button>
+        )}
     </Box>
   );
 };

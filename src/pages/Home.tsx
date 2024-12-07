@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import multiMonthPlugin from '@fullcalendar/multimonth';
+import multiMonthPlugin from "@fullcalendar/multimonth";
 import {
   Box,
   Button,
@@ -164,7 +164,10 @@ const Home: React.FC = () => {
     const userAccess = calendar.users.find(
       (user) => user.userId === currentUser.userId,
     );
-    return userAccess?.accessLevel === "EDITOR" || userAccess?.accessLevel === "OWNER";
+    return (
+      userAccess?.accessLevel === "EDITOR" ||
+      userAccess?.accessLevel === "OWNER"
+    );
   };
 
   const hasInvitePermission = (calendarId: string) => {
@@ -192,17 +195,20 @@ const Home: React.FC = () => {
 
   const fetchAllEvents = async () => {
     if (!userCalendars) return;
-    
+
     try {
-      const eventsPromises = userCalendars.map(calendar => 
-        getCalendarEvents(calendar.calendarId).data || []
+      const eventsPromises = userCalendars.map(
+        (calendar) => getCalendarEvents(calendar.calendarId).data || [],
       );
-      
+
       const allEventsArrays = await Promise.all(eventsPromises);
       const combinedEvents = allEventsArrays
         .flat()
-        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-      
+        .sort(
+          (a, b) =>
+            new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+        );
+
       setAllEvents(combinedEvents);
     } catch (error) {
       setError("イベントの取得に失敗しました");
@@ -217,10 +223,10 @@ const Home: React.FC = () => {
 
   const handleEditEvent = async (event: Event) => {
     if (!selectedCalendarData) return;
-    
+
     setEditingEvent({
       ...event,
-      calendarId: selectedCalendarData.calendarId
+      calendarId: selectedCalendarData.calendarId,
     });
     setIsEditEventOpen(true);
     setSelectedEvent(null);
@@ -228,7 +234,7 @@ const Home: React.FC = () => {
 
   const handleUpdateEvent = async () => {
     if (!editingEvent || !editingEvent.calendarId) return;
-    
+
     try {
       await editEvent.mutateAsync({
         calendarId: editingEvent.calendarId,
@@ -285,7 +291,7 @@ const Home: React.FC = () => {
             variant="outlined"
             onClick={() => setShowAllEvents(!showAllEvents)}
           >
-            {showAllEvents ? "カレンダー表示" :"全イベント表示"}
+            {showAllEvents ? "カレンダー表示" : "全イベント表示"}
           </Button>
           {!isAuthenticated && (
             <GoogleLoginButton
@@ -303,7 +309,7 @@ const Home: React.FC = () => {
             calendars={userCalendars || []}
             selectedCalendarId={selectedCalendar}
             onCalendarChange={handleCalendarChange}
-            currentUserId={currentUser?.userId || ''}
+            currentUserId={currentUser?.userId || ""}
             onUnfollow={async (calendarId) => {
               try {
                 await unfollowCalendar.mutateAsync(calendarId);
@@ -323,8 +329,10 @@ const Home: React.FC = () => {
 
         {showAllEvents ? (
           <Box>
-            <Typography variant="h6" sx={{ mb: 2}}>全カレンダーのイベント</Typography>
-            {allEvents.map(event => (
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              全カレンダーのイベント
+            </Typography>
+            {allEvents.map((event) => (
               <Card key={event.eventId} sx={{ mb: 1, p: 2 }}>
                 <Typography variant="subtitle1">{event.title}</Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -366,13 +374,13 @@ const Home: React.FC = () => {
               views={{
                 multiMonthYear: {
                   duration: { years: 1 },
-                  buttonText: '年',
-                  titleFormat: { year: 'numeric' }
+                  buttonText: "年",
+                  titleFormat: { year: "numeric" },
                 },
                 dayGridMonth: {
-                  buttonText: '月',
-                  titleFormat: { year: 'numeric' }
-                }
+                  buttonText: "月",
+                  titleFormat: { year: "numeric" },
+                },
               }}
             />
           )
@@ -493,7 +501,11 @@ const Home: React.FC = () => {
           open={!!selectedEvent}
           onClose={() => setSelectedEvent(null)}
           event={selectedEvent}
-          hasEditPermission={selectedEvent && selectedCalendarData ? hasEditPermission(selectedCalendarData.calendarId) : false}
+          hasEditPermission={
+            selectedEvent && selectedCalendarData
+              ? hasEditPermission(selectedCalendarData.calendarId)
+              : false
+          }
           onEdit={handleEditEvent}
           onDelete={handleDeleteEvent}
         />
@@ -509,7 +521,9 @@ const Home: React.FC = () => {
               label="タイトル"
               value={editingEvent?.title || ""}
               onChange={(e) =>
-                setEditingEvent(prev => prev ? { ...prev, title: e.target.value } : null)
+                setEditingEvent((prev) =>
+                  prev ? { ...prev, title: e.target.value } : null,
+                )
               }
               sx={{ mt: 2 }}
             />
@@ -520,7 +534,9 @@ const Home: React.FC = () => {
               rows={3}
               value={editingEvent?.description || ""}
               onChange={(e) =>
-                setEditingEvent(prev => prev ? { ...prev, description: e.target.value } : null)
+                setEditingEvent((prev) =>
+                  prev ? { ...prev, description: e.target.value } : null,
+                )
               }
               sx={{ mt: 2 }}
             />
@@ -530,7 +546,9 @@ const Home: React.FC = () => {
               label="開始時間"
               value={editingEvent?.startTime || ""}
               onChange={(e) =>
-                setEditingEvent(prev => prev ? { ...prev, startTime: e.target.value } : null)
+                setEditingEvent((prev) =>
+                  prev ? { ...prev, startTime: e.target.value } : null,
+                )
               }
               sx={{ mt: 2 }}
               InputLabelProps={{ shrink: true }}
@@ -541,7 +559,9 @@ const Home: React.FC = () => {
               label="終了時間"
               value={editingEvent?.endTime || ""}
               onChange={(e) =>
-                setEditingEvent(prev => prev ? { ...prev, endTime: e.target.value } : null)
+                setEditingEvent((prev) =>
+                  prev ? { ...prev, endTime: e.target.value } : null,
+                )
               }
               sx={{ mt: 2 }}
               InputLabelProps={{ shrink: true }}
@@ -551,7 +571,9 @@ const Home: React.FC = () => {
               label="場所"
               value={editingEvent?.location || ""}
               onChange={(e) =>
-                setEditingEvent(prev => prev ? { ...prev, location: e.target.value } : null)
+                setEditingEvent((prev) =>
+                  prev ? { ...prev, location: e.target.value } : null,
+                )
               }
               sx={{ mt: 2 }}
             />
@@ -563,7 +585,11 @@ const Home: React.FC = () => {
             <Button
               onClick={handleUpdateEvent}
               variant="contained"
-              disabled={!editingEvent?.title || !editingEvent?.startTime || !editingEvent?.endTime}
+              disabled={
+                !editingEvent?.title ||
+                !editingEvent?.startTime ||
+                !editingEvent?.endTime
+              }
             >
               更新
             </Button>

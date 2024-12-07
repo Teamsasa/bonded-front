@@ -73,16 +73,10 @@ export const EventDetailDialog: React.FC<EventDetailDialogProps> = ({
       <DialogActions>
         {hasEditPermission && (
           <>
-            <Button 
-              onClick={() => event && onEdit?.(event)} 
-              color="primary"
-            >
+            <Button onClick={() => event && onEdit?.(event)} color="primary">
               編集
             </Button>
-            <Button 
-              onClick={() => event && onDelete?.(event)} 
-              color="error"
-            >
+            <Button onClick={() => event && onDelete?.(event)} color="error">
               削除
             </Button>
           </>
