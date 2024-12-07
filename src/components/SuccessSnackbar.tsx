@@ -19,4 +19,4 @@ export const SuccessSnackbar: React.FC<SuccessSnackbarProps> = ({
       </Alert>
     </Snackbar>
   );
-}; 
+};

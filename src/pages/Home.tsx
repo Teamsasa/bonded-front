@@ -21,9 +21,10 @@ import { useAuth } from "../hooks/useAuth";
 import GoogleIcon from "@mui/icons-material/Google";
 import { Button as MuiButton, styled } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { DefaultCalendarDialog } from '../components/DefaultCalendarDialog';
-import { InviteUserDialog } from '../components/InviteUserDialog';
+import { DefaultCalendarDialog } from "../components/DefaultCalendarDialog";
+import { InviteUserDialog } from "../components/InviteUserDialog";
 import { SuccessSnackbar } from "../components/SuccessSnackbar";
+import { EventDetailDialog } from "../components/EventDetailDialog";
 
 const Home: React.FC = () => {
   const { isAuthenticated, login, currentUser } = useAuth();
@@ -38,9 +39,11 @@ const Home: React.FC = () => {
   const [isCreateCalendarOpen, setIsCreateCalendarOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCalendar, setSelectedCalendar] = useState<string | null>(null);
-  const [showDefaultCalendarDialog, setShowDefaultCalendarDialog] = useState(false);
+  const [showDefaultCalendarDialog, setShowDefaultCalendarDialog] =
+    useState(false);
   const [isInviteUserOpen, setIsInviteUserOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const {
     getUserCalendars,
@@ -53,7 +56,8 @@ const Home: React.FC = () => {
   } = useCalendar();
 
   const userId = "dummy-user-id";
-  const { data: userCalendars, isSuccess: isCalendarsLoaded } = getUserCalendars();
+  const { data: userCalendars, isSuccess: isCalendarsLoaded } =
+    getUserCalendars();
   const { data: publicCalendars } = getPublicCalendars();
 
   const navigate = useNavigate();
@@ -74,17 +78,27 @@ const Home: React.FC = () => {
   };
 
   const handleCreateEvent = async () => {
-    if (userCalendars?.[0]) {
-      try {
-        await createEvent.mutateAsync({
-          calendarId: userCalendars[0].calendarId,
-          data: newEvent,
-        });
-        setSuccessMessage("イベントを作成しました");
-        setIsCreateEventOpen(false);
-      } catch (error) {
-        setError("イベントの作成に失敗しました");
-      }
+    if (!selectedCalendar) return;
+
+    try {
+      await createEvent.mutateAsync({
+        calendarId: selectedCalendar,
+        data: {
+          ...newEvent,
+          allDay: false,
+        },
+      });
+      setSuccessMessage("イベントを作成しました");
+      setIsCreateEventOpen(false);
+      setNewEvent({
+        title: "",
+        description: "",
+        startTime: "",
+        endTime: "",
+        location: "",
+      });
+    } catch (error) {
+      setError("イベントの作成に失敗しました");
     }
   };
 
@@ -96,7 +110,9 @@ const Home: React.FC = () => {
     (calendar) => calendar.calendarId === selectedCalendar,
   );
 
-  const { data: selectedCalendarEvents } = getCalendarEvents(selectedCalendar || '');
+  const { data: selectedCalendarEvents } = getCalendarEvents(
+    selectedCalendar || "",
+  );
 
   const handleCreateCalendarClick = () => {
     if (!isAuthenticated) {
@@ -120,29 +136,35 @@ const Home: React.FC = () => {
       setSuccessMessage("デフォルトカレンダーを作成しました");
       setShowDefaultCalendarDialog(false);
     } catch (error) {
-      setError('デフォルトカレンダーの作成に失敗しました');
+      setError("デフォルトカレンダーの作成に失敗しました");
     }
   };
 
   const hasEditPermission = (calendarId: string) => {
-    const calendar = userCalendars?.find(cal => cal.calendarId === calendarId);
+    const calendar = userCalendars?.find(
+      (cal) => cal.calendarId === calendarId,
+    );
     if (!calendar || !currentUser) return false;
-    
+
     if (calendar.ownerUserId === currentUser.userId) return true;
-    
-    const userAccess = calendar.users.find(user => user.userId === currentUser.userId);
-    return userAccess?.accessLevel === 'EDITOR';
+
+    const userAccess = calendar.users.find(
+      (user) => user.userId === currentUser.userId,
+    );
+    return userAccess?.accessLevel === "EDITOR";
   };
 
   const hasInvitePermission = (calendarId: string) => {
-    const calendar = userCalendars?.find(cal => cal.calendarId === calendarId);
+    const calendar = userCalendars?.find(
+      (cal) => cal.calendarId === calendarId,
+    );
     if (!calendar || !currentUser) return false;
     return calendar.ownerUserId === currentUser.userId;
   };
 
   const handleInviteUser = async (userId: string, accessLevel: string) => {
     if (!selectedCalendar) return;
-    
+
     try {
       await inviteUser.mutateAsync({
         calendarId: selectedCalendar,
@@ -151,7 +173,7 @@ const Home: React.FC = () => {
       });
       setSuccessMessage("ユーザーを招待しました");
     } catch (error) {
-      setError('ユーザーの招待に失敗しました');
+      setError("ユーザーの招待に失敗しました");
     }
   };
 
@@ -211,12 +233,30 @@ const Home: React.FC = () => {
             plugins={[dayGridPlugin]}
             initialView="dayGridMonth"
             locale="ja"
-            events={selectedCalendarEvents?.map((event: Event) => ({
-              title: event.title,
-              start: event.startTime,
-              end: event.endTime,
-              allDay: event.allDay,
-            })) || []}
+            events={
+              selectedCalendarEvents?.map((event: Event) => ({
+                id: event.eventId,
+                title: event.title,
+                start: new Date(event.startTime).toISOString(),
+                end: new Date(event.endTime).toISOString(),
+                allDay: event.allDay,
+                backgroundColor: "#3788d8",
+                borderColor: "#2c6cb2",
+                textColor: "#ffffff",
+                extendedProps: {
+                  ...event,
+                },
+              })) || []
+            }
+            eventClick={(info) => {
+              setSelectedEvent(info.event.extendedProps as Event);
+            }}
+            headerToolbar={{
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth",
+            }}
+            height="auto"
           />
         )}
 
@@ -252,6 +292,8 @@ const Home: React.FC = () => {
             <TextField
               fullWidth
               label="説明"
+              multiline
+              rows={3}
               value={newEvent.description}
               onChange={(e) =>
                 setNewEvent({ ...newEvent, description: e.target.value })
@@ -267,21 +309,18 @@ const Home: React.FC = () => {
                 setNewEvent({ ...newEvent, startTime: e.target.value })
               }
               sx={{ mt: 2 }}
-              slotProps={{ inputLabel: { shrink: true } }}
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
               fullWidth
               type="datetime-local"
-              label="終時間"
+              label="終了時間"
               value={newEvent.endTime}
               onChange={(e) =>
                 setNewEvent({ ...newEvent, endTime: e.target.value })
               }
               sx={{ mt: 2 }}
-              slotProps={{
-                inputLabel: { shrink: true },
-                input: { type: "datetime-local" },
-              }}
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
               fullWidth
@@ -297,7 +336,13 @@ const Home: React.FC = () => {
             <Button onClick={() => setIsCreateEventOpen(false)}>
               キャンセル
             </Button>
-            <Button onClick={handleCreateEvent} variant="contained">
+            <Button
+              onClick={handleCreateEvent}
+              variant="contained"
+              disabled={
+                !newEvent.title || !newEvent.startTime || !newEvent.endTime
+              }
+            >
               作成
             </Button>
           </DialogActions>
@@ -324,6 +369,12 @@ const Home: React.FC = () => {
           open={!!error}
           message={error || ""}
           onClose={() => setError(null)}
+        />
+
+        <EventDetailDialog
+          open={!!selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          event={selectedEvent}
         />
       </Box>
     </Container>

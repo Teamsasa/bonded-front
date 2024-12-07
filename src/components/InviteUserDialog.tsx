@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,7 +10,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-} from '@mui/material';
+} from "@mui/material";
 
 interface InviteUserDialogProps {
   open: boolean;
@@ -23,14 +23,14 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const [userId, setUserId] = useState('');
-  const [accessLevel, setAccessLevel] = useState('VIEWER');
+  const [userId, setUserId] = useState("");
+  const [accessLevel, setAccessLevel] = useState("VIEWER");
 
   const handleSubmit = () => {
     if (userId.trim()) {
       onSubmit(userId, accessLevel);
-      setUserId('');
-      setAccessLevel('VIEWER');
+      setUserId("");
+      setAccessLevel("VIEWER");
       onClose();
     }
   };
@@ -68,4 +68,4 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
       </DialogActions>
     </Dialog>
   );
-}; 
+};

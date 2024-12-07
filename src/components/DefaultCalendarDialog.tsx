@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -7,7 +7,7 @@ import {
   TextField,
   Button,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
 
 interface DefaultCalendarDialogProps {
   open: boolean;
@@ -18,7 +18,7 @@ export const DefaultCalendarDialog: React.FC<DefaultCalendarDialogProps> = ({
   open,
   onSubmit,
 }) => {
-  const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useState("");
 
   const handleSubmit = () => {
     if (userName.trim()) {
@@ -49,4 +49,4 @@ export const DefaultCalendarDialog: React.FC<DefaultCalendarDialogProps> = ({
       </DialogActions>
     </Dialog>
   );
-}; 
+};

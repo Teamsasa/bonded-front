@@ -9,7 +9,7 @@ export const useAuth = () => {
   useEffect(() => {
     const accessToken = sessionStorage.getItem("access_token");
     const idToken = sessionStorage.getItem("id_token");
-    
+
     if (accessToken && idToken) {
       setIsAuthenticated(true);
       const decodedToken = parseJwt(accessToken);
@@ -17,7 +17,7 @@ export const useAuth = () => {
         setCurrentUser({
           userId: decodedToken.sub,
           email: decodedToken.email,
-          accessLevel: decodedToken.accessLevel || 'VIEWER'
+          accessLevel: decodedToken.accessLevel || "VIEWER",
         });
       }
     }
