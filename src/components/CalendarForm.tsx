@@ -8,7 +8,6 @@ import {
   Button,
   Switch,
   FormControlLabel,
-  Autocomplete,
 } from "@mui/material";
 import { Calendar, User } from "../types";
 
