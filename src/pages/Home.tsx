@@ -23,6 +23,7 @@ import { Button as MuiButton, styled } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { DefaultCalendarDialog } from '../components/DefaultCalendarDialog';
 import { InviteUserDialog } from '../components/InviteUserDialog';
+import { SuccessSnackbar } from "../components/SuccessSnackbar";
 
 const Home: React.FC = () => {
   const { isAuthenticated, login, currentUser } = useAuth();
@@ -39,6 +40,7 @@ const Home: React.FC = () => {
   const [selectedCalendar, setSelectedCalendar] = useState<string | null>(null);
   const [showDefaultCalendarDialog, setShowDefaultCalendarDialog] = useState(false);
   const [isInviteUserOpen, setIsInviteUserOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const {
     getUserCalendars,
@@ -65,6 +67,7 @@ const Home: React.FC = () => {
   const handleCreateCalendar = async (data: Partial<Calendar>) => {
     try {
       await createCalendar.mutateAsync(data);
+      setSuccessMessage("カレンダーを作成しました");
     } catch (error) {
       setError("カレンダーの作成に失敗しました");
     }
@@ -72,11 +75,16 @@ const Home: React.FC = () => {
 
   const handleCreateEvent = async () => {
     if (userCalendars?.[0]) {
-      await createEvent.mutateAsync({
-        calendarId: userCalendars[0].calendarId,
-        data: newEvent,
-      });
-      setIsCreateEventOpen(false);
+      try {
+        await createEvent.mutateAsync({
+          calendarId: userCalendars[0].calendarId,
+          data: newEvent,
+        });
+        setSuccessMessage("イベントを作成しました");
+        setIsCreateEventOpen(false);
+      } catch (error) {
+        setError("イベントの作成に失敗しました");
+      }
     }
   };
 
@@ -109,6 +117,7 @@ const Home: React.FC = () => {
   const handleCreateDefaultCalendar = async (name: string) => {
     try {
       await createDefaultCalendar.mutateAsync(name);
+      setSuccessMessage("デフォルトカレンダーを作成しました");
       setShowDefaultCalendarDialog(false);
     } catch (error) {
       setError('デフォルトカレンダーの作成に失敗しました');
@@ -140,6 +149,7 @@ const Home: React.FC = () => {
         userId,
         accessLevel,
       });
+      setSuccessMessage("ユーザーを招待しました");
     } catch (error) {
       setError('ユーザーの招待に失敗しました');
     }
@@ -302,6 +312,12 @@ const Home: React.FC = () => {
           open={isInviteUserOpen}
           onClose={() => setIsInviteUserOpen(false)}
           onSubmit={handleInviteUser}
+        />
+
+        <SuccessSnackbar
+          open={!!successMessage}
+          message={successMessage || ""}
+          onClose={() => setSuccessMessage(null)}
         />
 
         <ErrorSnackbar
