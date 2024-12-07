@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogActions,
   Typography,
+  Card,
 } from "@mui/material";
 import { useCalendar } from "../hooks/useCalendar";
 import { Event, Calendar } from "../types";
@@ -45,6 +46,10 @@ const Home: React.FC = () => {
   const [isInviteUserOpen, setIsInviteUserOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showAllEvents, setShowAllEvents] = useState(false);
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [isEditEventOpen, setIsEditEventOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
   const {
     getUserCalendars,
@@ -54,6 +59,9 @@ const Home: React.FC = () => {
     createDefaultCalendar,
     getCalendarEvents,
     inviteUser,
+    unfollowCalendar,
+    editEvent,
+    deleteEvent,
   } = useCalendar();
 
   const userId = "dummy-user-id";
@@ -156,7 +164,7 @@ const Home: React.FC = () => {
     const userAccess = calendar.users.find(
       (user) => user.userId === currentUser.userId,
     );
-    return userAccess?.accessLevel === "EDITOR";
+    return userAccess?.accessLevel === "EDITOR" || userAccess?.accessLevel === "OWNER";
   };
 
   const hasInvitePermission = (calendarId: string) => {
@@ -179,6 +187,71 @@ const Home: React.FC = () => {
       setSuccessMessage("ユーザーを招待しました");
     } catch (error) {
       setError("ユーザーの招待に失敗しました");
+    }
+  };
+
+  const fetchAllEvents = async () => {
+    if (!userCalendars) return;
+    
+    try {
+      const eventsPromises = userCalendars.map(calendar => 
+        getCalendarEvents(calendar.calendarId).data || []
+      );
+      
+      const allEventsArrays = await Promise.all(eventsPromises);
+      const combinedEvents = allEventsArrays
+        .flat()
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      
+      setAllEvents(combinedEvents);
+    } catch (error) {
+      setError("イベントの取得に失敗しました");
+    }
+  };
+
+  useEffect(() => {
+    if (showAllEvents) {
+      fetchAllEvents();
+    }
+  }, [showAllEvents, userCalendars]);
+
+  const handleEditEvent = async (event: Event) => {
+    if (!selectedCalendarData) return;
+    
+    setEditingEvent({
+      ...event,
+      calendarId: selectedCalendarData.calendarId
+    });
+    setIsEditEventOpen(true);
+    setSelectedEvent(null);
+  };
+
+  const handleUpdateEvent = async () => {
+    if (!editingEvent || !editingEvent.calendarId) return;
+    
+    try {
+      await editEvent.mutateAsync({
+        calendarId: editingEvent.calendarId,
+        data: editingEvent,
+      });
+      setSuccessMessage("イベントを更新しました");
+      setIsEditEventOpen(false);
+      setEditingEvent(null);
+    } catch (error) {
+      setError("イベントの更新に失敗しました");
+    }
+  };
+
+  const handleDeleteEvent = async (event: Event) => {
+    try {
+      await deleteEvent.mutateAsync({
+        calendarId: event.calendarId,
+        eventId: event.eventId,
+      });
+      setSuccessMessage("イベントを削除しました");
+      setSelectedEvent(null);
+    } catch (error) {
+      setError("イベントの削除に失敗しました");
     }
   };
 
@@ -208,6 +281,12 @@ const Home: React.FC = () => {
           >
             公開カレンダー一覧へ
           </Button>
+          <Button
+            variant="outlined"
+            onClick={() => setShowAllEvents(!showAllEvents)}
+          >
+            {showAllEvents ? "カレンダー表示" :"全イベント表示"}
+          </Button>
           {!isAuthenticated && (
             <GoogleLoginButton
               variant="contained"
@@ -224,6 +303,15 @@ const Home: React.FC = () => {
             calendars={userCalendars || []}
             selectedCalendarId={selectedCalendar}
             onCalendarChange={handleCalendarChange}
+            currentUserId={currentUser?.userId || ''}
+            onUnfollow={async (calendarId) => {
+              try {
+                await unfollowCalendar.mutateAsync(calendarId);
+                setSuccessMessage("カレンダーのフォローを解除しました");
+              } catch (error) {
+                setError("フォロー解除に失敗しました");
+              }
+            }}
           />
         ) : (
           <Box sx={{ mb: 2 }}>
@@ -233,47 +321,61 @@ const Home: React.FC = () => {
           </Box>
         )}
 
-        {selectedCalendarData && (
-          <FullCalendar
-            plugins={[dayGridPlugin, multiMonthPlugin]}
-            initialView="dayGridMonth"
-            locale="ja"
-            events={
-              selectedCalendarEvents?.map((event: Event) => ({
-                id: event.eventId,
-                title: event.title,
-                start: new Date(event.startTime).toISOString(),
-                end: new Date(event.endTime).toISOString(),
-                allDay: event.allDay,
-                backgroundColor: "#3788d8",
-                borderColor: "#2c6cb2",
-                textColor: "#ffffff",
-                extendedProps: {
-                  ...event,
-                },
-              })) || []
-            }
-            eventClick={(info) => {
-              setSelectedEvent(info.event.extendedProps as Event);
-            }}
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "multiMonthYear,dayGridMonth",
-            }}
-            height="auto"
-            views={{
-              multiMonthYear: {
-                duration: { years: 1 },
-                buttonText: '年',
-                titleFormat: { year: 'numeric' }
-              },
-              dayGridMonth: {
-                buttonText: '月',
-                titleFormat: { year: 'numeric' }
+        {showAllEvents ? (
+          <Box>
+            <Typography variant="h6" sx={{ mb: 2}}>全カレンダーのイベント</Typography>
+            {allEvents.map(event => (
+              <Card key={event.eventId} sx={{ mb: 1, p: 2 }}>
+                <Typography variant="subtitle1">{event.title}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {new Date(event.startTime).toLocaleString()}
+                </Typography>
+              </Card>
+            ))}
+          </Box>
+        ) : (
+          selectedCalendarData && (
+            <FullCalendar
+              plugins={[dayGridPlugin, multiMonthPlugin]}
+              initialView="dayGridMonth"
+              locale="ja"
+              events={
+                selectedCalendarEvents?.map((event: Event) => ({
+                  id: event.eventId,
+                  title: event.title,
+                  start: new Date(event.startTime).toISOString(),
+                  end: new Date(event.endTime).toISOString(),
+                  allDay: event.allDay,
+                  backgroundColor: "#3788d8",
+                  borderColor: "#2c6cb2",
+                  textColor: "#ffffff",
+                  extendedProps: {
+                    ...event,
+                  },
+                })) || []
               }
-            }}
-          />
+              eventClick={(info) => {
+                setSelectedEvent(info.event.extendedProps as Event);
+              }}
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "multiMonthYear,dayGridMonth",
+              }}
+              height="auto"
+              views={{
+                multiMonthYear: {
+                  duration: { years: 1 },
+                  buttonText: '年',
+                  titleFormat: { year: 'numeric' }
+                },
+                dayGridMonth: {
+                  buttonText: '月',
+                  titleFormat: { year: 'numeric' }
+                }
+              }}
+            />
+          )
         )}
 
         {isAuthenticated && !selectedCalendar && (
@@ -391,7 +493,82 @@ const Home: React.FC = () => {
           open={!!selectedEvent}
           onClose={() => setSelectedEvent(null)}
           event={selectedEvent}
+          hasEditPermission={selectedEvent && selectedCalendarData ? hasEditPermission(selectedCalendarData.calendarId) : false}
+          onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
         />
+
+        <Dialog
+          open={isEditEventOpen}
+          onClose={() => setIsEditEventOpen(false)}
+        >
+          <DialogTitle>イベントを編集</DialogTitle>
+          <DialogContent>
+            <TextField
+              fullWidth
+              label="タイトル"
+              value={editingEvent?.title || ""}
+              onChange={(e) =>
+                setEditingEvent(prev => prev ? { ...prev, title: e.target.value } : null)
+              }
+              sx={{ mt: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="説明"
+              multiline
+              rows={3}
+              value={editingEvent?.description || ""}
+              onChange={(e) =>
+                setEditingEvent(prev => prev ? { ...prev, description: e.target.value } : null)
+              }
+              sx={{ mt: 2 }}
+            />
+            <TextField
+              fullWidth
+              type="datetime-local"
+              label="開始時間"
+              value={editingEvent?.startTime || ""}
+              onChange={(e) =>
+                setEditingEvent(prev => prev ? { ...prev, startTime: e.target.value } : null)
+              }
+              sx={{ mt: 2 }}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              fullWidth
+              type="datetime-local"
+              label="終了時間"
+              value={editingEvent?.endTime || ""}
+              onChange={(e) =>
+                setEditingEvent(prev => prev ? { ...prev, endTime: e.target.value } : null)
+              }
+              sx={{ mt: 2 }}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              fullWidth
+              label="場所"
+              value={editingEvent?.location || ""}
+              onChange={(e) =>
+                setEditingEvent(prev => prev ? { ...prev, location: e.target.value } : null)
+              }
+              sx={{ mt: 2 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsEditEventOpen(false)}>
+              キャンセル
+            </Button>
+            <Button
+              onClick={handleUpdateEvent}
+              variant="contained"
+              disabled={!editingEvent?.title || !editingEvent?.startTime || !editingEvent?.endTime}
+            >
+              更新
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Container>
   );

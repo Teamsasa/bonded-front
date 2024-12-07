@@ -14,12 +14,18 @@ interface EventDetailDialogProps {
   open: boolean;
   onClose: () => void;
   event: Event | null;
+  hasEditPermission: boolean;
+  onEdit?: (event: Event) => void;
+  onDelete?: (event: Event) => void;
 }
 
 export const EventDetailDialog: React.FC<EventDetailDialogProps> = ({
   open,
   onClose,
   event,
+  hasEditPermission,
+  onEdit,
+  onDelete,
 }) => {
   if (!event) return null;
 
@@ -65,6 +71,22 @@ export const EventDetailDialog: React.FC<EventDetailDialogProps> = ({
         )}
       </DialogContent>
       <DialogActions>
+        {hasEditPermission && (
+          <>
+            <Button 
+              onClick={() => event && onEdit?.(event)} 
+              color="primary"
+            >
+              編集
+            </Button>
+            <Button 
+              onClick={() => event && onDelete?.(event)} 
+              color="error"
+            >
+              削除
+            </Button>
+          </>
+        )}
         <Button onClick={onClose}>閉じる</Button>
       </DialogActions>
     </Dialog>

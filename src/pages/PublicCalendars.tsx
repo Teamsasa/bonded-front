@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { useCalendar } from "../hooks/useCalendar";
 import { ErrorSnackbar } from "../components/ErrorSnackbar";
+import { SuccessSnackbar } from "../components/SuccessSnackbar";
 import { Calendar } from "../types";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
@@ -18,6 +19,7 @@ const PublicCalendars: React.FC = () => {
   const { getPublicCalendars, followCalendar } = useCalendar();
   const { data: publicCalendars } = getPublicCalendars();
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
@@ -28,6 +30,7 @@ const PublicCalendars: React.FC = () => {
     }
     try {
       await followCalendar.mutateAsync(calendarId);
+      setSuccessMessage("カレンダーをフォローしました");
     } catch (error) {
       setError("カレンダーのフォローに失敗しました");
     }
@@ -75,6 +78,11 @@ const PublicCalendars: React.FC = () => {
           open={!!error}
           message={error || ""}
           onClose={() => setError(null)}
+        />
+        <SuccessSnackbar
+          open={!!successMessage}
+          message={successMessage || ""}
+          onClose={() => setSuccessMessage(null)}
         />
       </Box>
     </Container>

@@ -106,7 +106,7 @@ export const useCalendar = () => {
       calendarId: string;
       data: Partial<Event>;
     }) => {
-      return apiClient.put(`/calendar/${calendarId}/event`, data);
+      return apiClient.put(`/event/edit/${calendarId}`, data);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({

@@ -7,6 +7,7 @@ export interface User {
 
 export interface Event {
   eventId: string;
+  calendarId: string;
   title: string;
   description: string;
   startTime: string;
