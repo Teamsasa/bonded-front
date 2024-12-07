@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import {
@@ -21,6 +21,7 @@ import { useAuth } from "../hooks/useAuth";
 import GoogleIcon from "@mui/icons-material/Google";
 import { Button as MuiButton, styled } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { DefaultCalendarDialog } from '../components/DefaultCalendarDialog';
 
 const Home: React.FC = () => {
   const { isAuthenticated, login } = useAuth();
@@ -35,15 +36,28 @@ const Home: React.FC = () => {
   const [isCreateCalendarOpen, setIsCreateCalendarOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCalendar, setSelectedCalendar] = useState<string | null>(null);
+  const [showDefaultCalendarDialog, setShowDefaultCalendarDialog] = useState(false);
 
-  const { getUserCalendars, createCalendar, getPublicCalendars, createEvent } =
-    useCalendar();
+  const {
+    getUserCalendars,
+    createCalendar,
+    getPublicCalendars,
+    createEvent,
+    createDefaultCalendar,
+    getCalendarEvents,
+  } = useCalendar();
 
   const userId = "dummy-user-id";
-  const { data: userCalendars } = getUserCalendars();
+  const { data: userCalendars, isSuccess: isCalendarsLoaded } = getUserCalendars();
   const { data: publicCalendars } = getPublicCalendars();
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated && isCalendarsLoaded && userCalendars?.length === 0) {
+      setShowDefaultCalendarDialog(true);
+    }
+  }, [isAuthenticated, isCalendarsLoaded, userCalendars]);
 
   const handleCreateCalendar = async (data: Partial<Calendar>) => {
     try {
@@ -71,6 +85,8 @@ const Home: React.FC = () => {
     (calendar) => calendar.calendarId === selectedCalendar,
   );
 
+  const { data: selectedCalendarEvents } = getCalendarEvents(selectedCalendar || '');
+
   const handleCreateCalendarClick = () => {
     if (!isAuthenticated) {
       setError("カレンダーを作成するにはログインが必要です");
@@ -85,6 +101,15 @@ const Home: React.FC = () => {
       return;
     }
     setIsCreateEventOpen(true);
+  };
+
+  const handleCreateDefaultCalendar = async (name: string) => {
+    try {
+      await createDefaultCalendar.mutateAsync(name);
+      setShowDefaultCalendarDialog(false);
+    } catch (error) {
+      setError('デフォルトカレンダーの作成に失敗しました');
+    }
   };
 
   return (
@@ -133,11 +158,12 @@ const Home: React.FC = () => {
             plugins={[dayGridPlugin]}
             initialView="dayGridMonth"
             locale="ja"
-            events={selectedCalendarData.events.map((event: Event) => ({
+            events={selectedCalendarEvents?.map((event: Event) => ({
               title: event.title,
               start: event.startTime,
               end: event.endTime,
-            }))}
+              allDay: event.allDay,
+            })) || []}
           />
         )}
 
@@ -223,6 +249,11 @@ const Home: React.FC = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        <DefaultCalendarDialog
+          open={showDefaultCalendarDialog}
+          onSubmit={handleCreateDefaultCalendar}
+        />
 
         <ErrorSnackbar
           open={!!error}

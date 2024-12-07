@@ -134,6 +134,20 @@ export const useCalendar = () => {
     },
   });
 
+  const createDefaultCalendar = useMutation({
+    mutationFn: async (userName: string) => {
+      return apiClient.post("/calendar/create", {
+        name: `${userName}のカレンダー`,
+        ownerName: userName,
+        isPublic: false,
+        users: [],
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["calendars"] });
+    },
+  });
+
   return {
     getUserCalendars,
     createCalendar,
@@ -145,5 +159,6 @@ export const useCalendar = () => {
     editCalendar,
     editEvent,
     deleteEvent,
+    createDefaultCalendar,
   };
 };

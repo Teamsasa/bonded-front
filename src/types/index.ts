@@ -21,6 +21,7 @@ export interface Calendar {
   name: string;
   isPublic: boolean;
   ownerUserId: string;
+  ownerName: string;
   users: User[];
   events: Event[];
 }
