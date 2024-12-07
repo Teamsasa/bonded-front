@@ -24,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 import { DefaultCalendarDialog } from '../components/DefaultCalendarDialog';
 
 const Home: React.FC = () => {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, currentUser } = useAuth();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -112,6 +112,16 @@ const Home: React.FC = () => {
     }
   };
 
+  const hasEditPermission = (calendarId: string) => {
+    const calendar = userCalendars?.find(cal => cal.calendarId === calendarId);
+    if (!calendar || !currentUser) return false;
+    
+    if (calendar.ownerUserId === currentUser.userId) return true;
+    
+    const userAccess = calendar.users.find(user => user.userId === currentUser.userId);
+    return userAccess?.accessLevel === 'EDITOR';
+  };
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
@@ -119,9 +129,11 @@ const Home: React.FC = () => {
           <Button variant="contained" onClick={handleCreateCalendarClick}>
             カレンダーを作成
           </Button>
-          <Button variant="contained" onClick={handleCreateEventClick}>
-            イベントを作成
-          </Button>
+          {selectedCalendar && hasEditPermission(selectedCalendar) && (
+            <Button variant="contained" onClick={handleCreateEventClick}>
+              イベントを作成
+            </Button>
+          )}
           <Button
             variant="outlined"
             onClick={() => navigate("/public-calendars")}
