@@ -158,9 +158,10 @@ export const useCalendar = () => {
       userId: string;
       accessLevel: string;
     }) => {
-      return apiClient.post(`/calendar/${calendarId}/invite`, {
-        userId,
-        accessLevel,
+      return apiClient.post(`/calendar/user/invite`, {
+        calendarId : calendarId,
+        inviteUserId : userId,
+        accessLevel : accessLevel,
       });
     },
     onSuccess: () => {
