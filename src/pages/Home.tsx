@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import multiMonthPlugin from '@fullcalendar/multimonth';
 import {
   Box,
   Button,
@@ -234,7 +235,7 @@ const Home: React.FC = () => {
 
         {selectedCalendarData && (
           <FullCalendar
-            plugins={[dayGridPlugin]}
+            plugins={[dayGridPlugin, multiMonthPlugin]}
             initialView="dayGridMonth"
             locale="ja"
             events={
@@ -258,9 +259,20 @@ const Home: React.FC = () => {
             headerToolbar={{
               left: "prev,next today",
               center: "title",
-              right: "dayGridMonth",
+              right: "multiMonthYear,dayGridMonth",
             }}
             height="auto"
+            views={{
+              multiMonthYear: {
+                duration: { years: 1 },
+                buttonText: '年',
+                titleFormat: { year: 'numeric' }
+              },
+              dayGridMonth: {
+                buttonText: '月',
+                titleFormat: { year: 'numeric' }
+              }
+            }}
           />
         )}
 
