@@ -12,24 +12,40 @@ import { useCalendar } from "../hooks/useCalendar";
 import { ErrorSnackbar } from "../components/ErrorSnackbar";
 import { Calendar } from "../types";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const PublicCalendars: React.FC = () => {
-  const { getPublicCalendars } = useCalendar();
+  const { getPublicCalendars, followCalendar } = useCalendar();
   const { data: publicCalendars } = getPublicCalendars();
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  const handleFollowCalendar = async (calendarId: string) => {
+    if (!isAuthenticated) {
+      setError("フォローするにはログインが必要です");
+      return;
+    }
+    try {
+      await followCalendar.mutateAsync(calendarId);
+    } catch (error) {
+      setError("カレンダーのフォローに失敗しました");
+    }
+  };
 
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Typography variant="h4">
-            公開カレンダー一覧
-          </Typography>
-          <Button
-            variant="outlined"
-            onClick={() => navigate('/')}
-          >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+          }}
+        >
+          <Typography variant="h4">公開カレンダー一覧</Typography>
+          <Button variant="outlined" onClick={() => navigate("/")}>
             マイカレンダーへ戻る
           </Button>
         </Box>
@@ -46,9 +62,7 @@ const PublicCalendars: React.FC = () => {
                     variant="contained"
                     size="small"
                     sx={{ mt: 2 }}
-                    onClick={() => {
-                      /* フォロー機能の実装 */
-                    }}
+                    onClick={() => handleFollowCalendar(calendar.calendarId)}
                   >
                     フォローする
                   </Button>

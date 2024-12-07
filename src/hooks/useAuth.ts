@@ -13,5 +13,5 @@ export const useAuth = () => {
     window.location.href = import.meta.env.VITE_COGNITO_LOGIN_URL;
   };
 
-  return { isAuthenticated, login};
-}; 
+  return { isAuthenticated, login };
+};

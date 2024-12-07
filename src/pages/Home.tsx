@@ -40,14 +40,14 @@ const Home: React.FC = () => {
     useCalendar();
 
   const userId = "dummy-user-id";
-  const { data: userCalendars } = getUserCalendars(userId);
+  const { data: userCalendars } = getUserCalendars();
   const { data: publicCalendars } = getPublicCalendars();
 
   const navigate = useNavigate();
 
   const handleCreateCalendar = async (data: Partial<Calendar>) => {
     try {
-      await createCalendar.mutateAsync({ userId, data });
+      await createCalendar.mutateAsync(data);
     } catch (error) {
       setError("カレンダーの作成に失敗しました");
     }
@@ -91,21 +91,15 @@ const Home: React.FC = () => {
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
         <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
-          <Button
-            variant="contained"
-            onClick={handleCreateCalendarClick}
-          >
+          <Button variant="contained" onClick={handleCreateCalendarClick}>
             カレンダーを作成
           </Button>
-          <Button
-            variant="contained"
-            onClick={handleCreateEventClick}
-          >
+          <Button variant="contained" onClick={handleCreateEventClick}>
             イベントを作成
           </Button>
           <Button
             variant="outlined"
-            onClick={() => navigate('/public-calendars')}
+            onClick={() => navigate("/public-calendars")}
           >
             公開カレンダー一覧へ
           </Button>
@@ -128,7 +122,9 @@ const Home: React.FC = () => {
           />
         ) : (
           <Box sx={{ mb: 2 }}>
-            {publicCalendars?.length ? "公開カレンダー一覧" : "公開カレンダーはありません"}
+            {publicCalendars?.length
+              ? "公開カレンダー一覧"
+              : "公開カレンダーはありません"}
           </Box>
         )}
 
@@ -146,7 +142,7 @@ const Home: React.FC = () => {
         )}
 
         {isAuthenticated && !selectedCalendar && (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Box sx={{ textAlign: "center", py: 4 }}>
             <Typography color="textSecondary">
               カレンダーを選択してください
             </Typography>
@@ -203,7 +199,10 @@ const Home: React.FC = () => {
                 setNewEvent({ ...newEvent, endTime: e.target.value })
               }
               sx={{ mt: 2 }}
-              slotProps={{ inputLabel: { shrink: true }, input: { type: 'datetime-local' } }}
+              slotProps={{
+                inputLabel: { shrink: true },
+                input: { type: "datetime-local" },
+              }}
             />
             <TextField
               fullWidth
