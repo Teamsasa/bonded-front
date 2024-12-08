@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_COGNITO_CLIENT_SECRET: string;
   readonly VITE_COGNITO_REDIRECT_URI: string;
   readonly VITE_COGNITO_TOKEN_URL: string;
+  readonly VITE_BASE_URL: string;
 }
 
 interface ImportMeta {
