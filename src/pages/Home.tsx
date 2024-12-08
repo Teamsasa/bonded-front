@@ -199,14 +199,19 @@ const Home: React.FC = () => {
 
     try {
       const eventsPromises = userCalendars.map(async (calendar) => {
-        const response = await apiClient.get<Event[]>(`/event/list/${calendar.calendarId}`);
+        const response = await apiClient.get<Event[]>(
+          `/event/list/${calendar.calendarId}`,
+        );
         return response.data;
       });
 
       const allEventsArrays = await Promise.all(eventsPromises);
       const combinedEvents = allEventsArrays
         .flat()
-        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        .sort(
+          (a, b) =>
+            new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+        );
 
       setAllEvents(combinedEvents);
     } catch (error) {
