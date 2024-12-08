@@ -28,8 +28,12 @@ export const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   onFollow,
   isPublicView,
 }) => {
-  const selectedCalendar = calendars.find(c => c.calendarId === selectedCalendarId);
-  const isFollowed = selectedCalendar?.users.some(u => u.userId === currentUserId);
+  const selectedCalendar = calendars.find(
+    (c) => c.calendarId === selectedCalendarId,
+  );
+  const isFollowed = selectedCalendar?.users.some(
+    (u) => u.userId === currentUserId,
+  );
   const isOwner = selectedCalendar?.ownerUserId === currentUserId;
 
   return (

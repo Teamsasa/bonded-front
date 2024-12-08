@@ -20,7 +20,12 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 
 const PublicCalendars: React.FC = () => {
-  const { getPublicCalendars, followCalendar, getCalendarEvents, unfollowCalendar } = useCalendar();
+  const {
+    getPublicCalendars,
+    followCalendar,
+    getCalendarEvents,
+    unfollowCalendar,
+  } = useCalendar();
   const { data: publicCalendars } = getPublicCalendars();
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -42,18 +47,23 @@ const PublicCalendars: React.FC = () => {
     }
   };
 
-  const filteredCalendars = publicCalendars 
-    ? publicCalendars.filter(calendar => {
+  const filteredCalendars = publicCalendars
+    ? publicCalendars.filter((calendar) => {
         const name = calendar.name?.toLowerCase() || "";
         const ownerName = calendar.ownerName?.toLowerCase() || "";
-        return name.includes(searchQuery.toLowerCase()) || ownerName.includes(searchQuery.toLowerCase());
+        return (
+          name.includes(searchQuery.toLowerCase()) ||
+          ownerName.includes(searchQuery.toLowerCase())
+        );
       })
     : [];
 
-  const { data: selectedCalendarEvents } = getCalendarEvents(selectedCalendar || '');
+  const { data: selectedCalendarEvents } = getCalendarEvents(
+    selectedCalendar || "",
+  );
 
   const selectedCalendarData = publicCalendars?.find(
-    calendar => calendar.calendarId === selectedCalendar
+    (calendar) => calendar.calendarId === selectedCalendar,
   );
 
   return (
@@ -82,8 +92,8 @@ const PublicCalendars: React.FC = () => {
 
         {selectedCalendar ? (
           <>
-            <Button 
-              variant="outlined" 
+            <Button
+              variant="outlined"
               onClick={() => setSelectedCalendar(null)}
               sx={{ mb: 2 }}
             >
@@ -93,7 +103,7 @@ const PublicCalendars: React.FC = () => {
               calendars={publicCalendars || []}
               selectedCalendarId={selectedCalendar}
               onCalendarChange={setSelectedCalendar}
-              currentUserId={currentUser?.userId || ''}
+              currentUserId={currentUser?.userId || ""}
               onUnfollow={async (calendarId) => {
                 try {
                   await unfollowCalendar.mutateAsync(calendarId);
@@ -110,16 +120,18 @@ const PublicCalendars: React.FC = () => {
                 plugins={[dayGridPlugin]}
                 initialView="dayGridMonth"
                 locale="ja"
-                events={selectedCalendarEvents?.map((event) => ({
-                  id: event.eventId,
-                  title: event.title,
-                  start: new Date(event.startTime).toISOString(),
-                  end: new Date(event.endTime).toISOString(),
-                  allDay: event.allDay,
-                  backgroundColor: "#3788d8",
-                  borderColor: "#2c6cb2",
-                  textColor: "#ffffff",
-                })) || []}
+                events={
+                  selectedCalendarEvents?.map((event) => ({
+                    id: event.eventId,
+                    title: event.title,
+                    start: new Date(event.startTime).toISOString(),
+                    end: new Date(event.endTime).toISOString(),
+                    allDay: event.allDay,
+                    backgroundColor: "#3788d8",
+                    borderColor: "#2c6cb2",
+                    textColor: "#ffffff",
+                  })) || []
+                }
                 headerToolbar={{
                   left: "prev,next today",
                   center: "title",
@@ -139,7 +151,7 @@ const PublicCalendars: React.FC = () => {
                     <Typography color="textSecondary">
                       作成者: {calendar.ownerName}
                     </Typography>
-                    <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                    <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
                       <Button
                         variant="outlined"
                         size="small"
@@ -151,7 +163,9 @@ const PublicCalendars: React.FC = () => {
                         <Button
                           variant="contained"
                           size="small"
-                          onClick={() => handleFollowCalendar(calendar.calendarId)}
+                          onClick={() =>
+                            handleFollowCalendar(calendar.calendarId)
+                          }
                         >
                           フォロー
                         </Button>
