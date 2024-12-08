@@ -72,14 +72,14 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && isCalendarsLoaded) {
       if (userCalendars === undefined) {
         setShowDefaultCalendarDialog(true);
       } else {
         setSelectedCalendar(userCalendars[0].calendarId);
       }
     }
-  }, [isAuthenticated, userCalendars]);
+  }, [isAuthenticated, isCalendarsLoaded, userCalendars]);
 
   const handleCreateCalendar = async (data: Partial<Calendar>) => {
     try {
@@ -287,12 +287,14 @@ const Home: React.FC = () => {
           >
             公開カレンダー一覧へ
           </Button>
-          <Button
-            variant="outlined"
-            onClick={() => setShowAllEvents(!showAllEvents)}
-          >
-            {showAllEvents ? "カレンダー表示" : "全イベント表示"}
-          </Button>
+          {isAuthenticated && (
+            <Button
+              variant="outlined"
+              onClick={() => setShowAllEvents(!showAllEvents)}
+            >
+              {showAllEvents ? "カレンダー表示" : "全イベント表示"}
+            </Button>
+          )}
           {!isAuthenticated && (
             <GoogleLoginButton
               variant="contained"

@@ -15,6 +15,8 @@ interface CalendarSelectorProps {
   onCalendarChange: (calendarId: string) => void;
   currentUserId: string;
   onUnfollow: (calendarId: string) => void;
+  onFollow?: (calendarId: string) => void;
+  isPublicView?: boolean;
 }
 
 export const CalendarSelector: React.FC<CalendarSelectorProps> = ({
@@ -23,7 +25,13 @@ export const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   onCalendarChange,
   currentUserId,
   onUnfollow,
+  onFollow,
+  isPublicView,
 }) => {
+  const selectedCalendar = calendars.find(c => c.calendarId === selectedCalendarId);
+  const isFollowed = selectedCalendar?.users.some(u => u.userId === currentUserId);
+  const isOwner = selectedCalendar?.ownerUserId === currentUserId;
+
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
       <FormControl fullWidth>
@@ -40,20 +48,28 @@ export const CalendarSelector: React.FC<CalendarSelectorProps> = ({
           ))}
         </Select>
       </FormControl>
-      {selectedCalendarId &&
-        calendars.find(
-          (c) =>
-            c.calendarId === selectedCalendarId &&
-            c.ownerUserId !== currentUserId,
-        ) && (
-          <Button
-            onClick={() => onUnfollow(selectedCalendarId)}
-            variant="outlined"
-            color="error"
-          >
-            アンフォロー
-          </Button>
-        )}
+      {selectedCalendarId && !isOwner && (
+        <>
+          {isPublicView && currentUserId && !isFollowed && (
+            <Button
+              onClick={() => onFollow?.(selectedCalendarId)}
+              variant="contained"
+              color="primary"
+            >
+              フォロー
+            </Button>
+          )}
+          {isFollowed && (
+            <Button
+              onClick={() => onUnfollow(selectedCalendarId)}
+              variant="outlined"
+              color="error"
+            >
+              アンフォロー
+            </Button>
+          )}
+        </>
+      )}
     </Box>
   );
 };

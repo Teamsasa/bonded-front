@@ -7,6 +7,7 @@ import {
   Typography,
   Button,
   Grid,
+  TextField,
 } from "@mui/material";
 import { useCalendar } from "../hooks/useCalendar";
 import { ErrorSnackbar } from "../components/ErrorSnackbar";
@@ -14,14 +15,19 @@ import { SuccessSnackbar } from "../components/SuccessSnackbar";
 import { Calendar } from "../types";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { CalendarSelector } from "../components/CalendarSelector";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
 
 const PublicCalendars: React.FC = () => {
-  const { getPublicCalendars, followCalendar } = useCalendar();
+  const { getPublicCalendars, followCalendar, getCalendarEvents, unfollowCalendar } = useCalendar();
   const { data: publicCalendars } = getPublicCalendars();
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, currentUser } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCalendar, setSelectedCalendar] = useState<string | null>(null);
 
   const handleFollowCalendar = async (calendarId: string) => {
     if (!isAuthenticated) {
@@ -35,6 +41,20 @@ const PublicCalendars: React.FC = () => {
       setError("カレンダーのフォローに失敗しました");
     }
   };
+
+  const filteredCalendars = publicCalendars 
+    ? publicCalendars.filter(calendar => {
+        const name = calendar.name?.toLowerCase() || "";
+        const ownerName = calendar.ownerName?.toLowerCase() || "";
+        return name.includes(searchQuery.toLowerCase()) || ownerName.includes(searchQuery.toLowerCase());
+      })
+    : [];
+
+  const { data: selectedCalendarEvents } = getCalendarEvents(selectedCalendar || '');
+
+  const selectedCalendarData = publicCalendars?.find(
+    calendar => calendar.calendarId === selectedCalendar
+  );
 
   return (
     <Container maxWidth="lg">
@@ -52,28 +72,97 @@ const PublicCalendars: React.FC = () => {
             マイカレンダーへ戻る
           </Button>
         </Box>
-        <Grid container spacing={3}>
-          {publicCalendars?.map((calendar: Calendar) => (
-            <Grid item xs={12} sm={6} md={4} key={calendar.calendarId}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">{calendar.name}</Typography>
-                  <Typography color="textSecondary">
-                    作成者: {calendar.ownerUserId}
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    sx={{ mt: 2 }}
-                    onClick={() => handleFollowCalendar(calendar.calendarId)}
-                  >
-                    フォローする
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+        <TextField
+          fullWidth
+          label="カレンダーを検索"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{ mb: 3 }}
+        />
+
+        {selectedCalendar ? (
+          <>
+            <Button 
+              variant="outlined" 
+              onClick={() => setSelectedCalendar(null)}
+              sx={{ mb: 2 }}
+            >
+              一覧に戻る
+            </Button>
+            <CalendarSelector
+              calendars={publicCalendars || []}
+              selectedCalendarId={selectedCalendar}
+              onCalendarChange={setSelectedCalendar}
+              currentUserId={currentUser?.userId || ''}
+              onUnfollow={async (calendarId) => {
+                try {
+                  await unfollowCalendar.mutateAsync(calendarId);
+                  setSuccessMessage("カレンダーのフォローを解除しました");
+                } catch (error) {
+                  setError("フォロー解除に失敗しました");
+                }
+              }}
+              onFollow={handleFollowCalendar}
+              isPublicView={true}
+            />
+            {selectedCalendarData && (
+              <FullCalendar
+                plugins={[dayGridPlugin]}
+                initialView="dayGridMonth"
+                locale="ja"
+                events={selectedCalendarEvents?.map((event) => ({
+                  id: event.eventId,
+                  title: event.title,
+                  start: new Date(event.startTime).toISOString(),
+                  end: new Date(event.endTime).toISOString(),
+                  allDay: event.allDay,
+                  backgroundColor: "#3788d8",
+                  borderColor: "#2c6cb2",
+                  textColor: "#ffffff",
+                })) || []}
+                headerToolbar={{
+                  left: "prev,next today",
+                  center: "title",
+                  right: "dayGridMonth",
+                }}
+                height="auto"
+              />
+            )}
+          </>
+        ) : (
+          <Grid container spacing={3}>
+            {filteredCalendars?.map((calendar: Calendar) => (
+              <Grid item xs={12} sm={6} md={4} key={calendar.calendarId}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6">{calendar.name}</Typography>
+                    <Typography color="textSecondary">
+                      作成者: {calendar.ownerName}
+                    </Typography>
+                    <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => setSelectedCalendar(calendar.calendarId)}
+                      >
+                        表示
+                      </Button>
+                      {isAuthenticated && (
+                        <Button
+                          variant="contained"
+                          size="small"
+                          onClick={() => handleFollowCalendar(calendar.calendarId)}
+                        >
+                          フォロー
+                        </Button>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
         <ErrorSnackbar
           open={!!error}
           message={error || ""}
