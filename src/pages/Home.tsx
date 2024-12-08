@@ -27,6 +27,7 @@ import { DefaultCalendarDialog } from "../components/DefaultCalendarDialog";
 import { InviteUserDialog } from "../components/InviteUserDialog";
 import { SuccessSnackbar } from "../components/SuccessSnackbar";
 import { EventDetailDialog } from "../components/EventDetailDialog";
+import apiClient from "../api/apiClient";
 
 const Home: React.FC = () => {
   const { isAuthenticated, login, currentUser } = useAuth();
@@ -197,17 +198,15 @@ const Home: React.FC = () => {
     if (!userCalendars) return;
 
     try {
-      const eventsPromises = userCalendars.map(
-        (calendar) => getCalendarEvents(calendar.calendarId).data || [],
-      );
+      const eventsPromises = userCalendars.map(async (calendar) => {
+        const response = await apiClient.get<Event[]>(`/event/list/${calendar.calendarId}`);
+        return response.data;
+      });
 
       const allEventsArrays = await Promise.all(eventsPromises);
       const combinedEvents = allEventsArrays
         .flat()
-        .sort(
-          (a, b) =>
-            new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
-        );
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
       setAllEvents(combinedEvents);
     } catch (error) {
@@ -216,7 +215,7 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    if (showAllEvents) {
+    if (showAllEvents && userCalendars) {
       fetchAllEvents();
     }
   }, [showAllEvents, userCalendars]);
@@ -306,7 +305,7 @@ const Home: React.FC = () => {
           )}
         </Box>
 
-        {isAuthenticated ? (
+        {isAuthenticated && !showAllEvents && (
           <CalendarSelector
             calendars={userCalendars || []}
             selectedCalendarId={selectedCalendar}
@@ -321,12 +320,6 @@ const Home: React.FC = () => {
               }
             }}
           />
-        ) : (
-          <Box sx={{ mb: 2 }}>
-            {publicCalendars?.length
-              ? "公開カレンダー一覧"
-              : "公開カレンダーはありません"}
-          </Box>
         )}
 
         {showAllEvents ? (
