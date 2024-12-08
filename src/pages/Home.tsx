@@ -73,7 +73,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated && isCalendarsLoaded) {
-      if (userCalendars === undefined) {
+      if (userCalendars === null) {
         setShowDefaultCalendarDialog(true);
       } else {
         setSelectedCalendar(userCalendars[0].calendarId);
