@@ -72,14 +72,14 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated && isCalendarsLoaded) {
-      if (userCalendars?.length === 0) {
+    if (isAuthenticated) {
+      if (userCalendars === undefined) {
         setShowDefaultCalendarDialog(true);
-      } else if (!selectedCalendar && userCalendars?.length > 0) {
+      } else {
         setSelectedCalendar(userCalendars[0].calendarId);
       }
     }
-  }, [isAuthenticated, isCalendarsLoaded, userCalendars, selectedCalendar]);
+  }, [isAuthenticated, userCalendars]);
 
   const handleCreateCalendar = async (data: Partial<Calendar>) => {
     try {
