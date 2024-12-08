@@ -173,7 +173,7 @@ const PublicCalendars: React.FC = () => {
                   <CardContent>
                     <Typography variant="h6">{calendar.name}</Typography>
                     <Typography color="textSecondary">
-                      作成者: {calendar.ownerName}
+                      作成者: {calendar.users[0].displayName}
                     </Typography>
                     <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
                       <Button
