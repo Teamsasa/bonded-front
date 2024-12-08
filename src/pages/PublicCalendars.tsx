@@ -173,7 +173,10 @@ const PublicCalendars: React.FC = () => {
                   <CardContent>
                     <Typography variant="h6">{calendar.name}</Typography>
                     <Typography color="textSecondary">
-                      作成者: {calendar.users[0].displayName}
+                      {calendar.users
+                        .filter((user) => user.accessLevel === "OWNER")
+                        .map((user) => user.displayName)
+                        .join(", ")}
                     </Typography>
                     <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
                       <Button
