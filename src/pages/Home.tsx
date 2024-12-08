@@ -202,7 +202,11 @@ const Home: React.FC = () => {
         const response = await apiClient.get<Event[]>(
           `/event/list/${calendar.calendarId}`,
         );
-        return response.data;
+        return response.data.map((event) => ({
+          ...event,
+          calendarId: calendar.calendarId,
+          calendarName: calendar.name,
+        }));
       });
 
       const allEventsArrays = await Promise.all(eventsPromises);
@@ -348,9 +352,32 @@ const Home: React.FC = () => {
             {allEvents.map((event) => (
               <Card key={event.eventId} sx={{ mb: 1, p: 2 }}>
                 <Typography variant="subtitle1">{event.title}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {new Date(event.startTime).toLocaleString()}
-                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 1,
+                    alignItems: "center",
+                    mt: 0.5,
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    {new Date(event.startTime).toLocaleString()}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#1976d2",
+                      backgroundColor: "#e3f2fd",
+                      px: 1,
+                      py: 0.25,
+                      borderRadius: 1,
+                      fontSize: "0.75rem",
+                      fontWeight: "medium",
+                    }}
+                  >
+                    from {event.calendarName}
+                  </Typography>
+                </Box>
               </Card>
             ))}
           </Box>

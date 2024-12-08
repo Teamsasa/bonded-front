@@ -14,6 +14,7 @@ export interface Event {
   endTime: string;
   location: string;
   allDay: boolean;
+  calendarName?: string;
 }
 
 export interface Calendar {
