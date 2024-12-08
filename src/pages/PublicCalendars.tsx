@@ -66,6 +66,18 @@ const PublicCalendars: React.FC = () => {
     (calendar) => calendar.calendarId === selectedCalendar,
   );
 
+  const formatDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return null;
+      }
+      return date.toISOString();
+    } catch {
+      return null;
+    }
+  };
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
@@ -121,16 +133,28 @@ const PublicCalendars: React.FC = () => {
                 initialView="dayGridMonth"
                 locale="ja"
                 events={
-                  selectedCalendarEvents?.map((event) => ({
-                    id: event.eventId,
-                    title: event.title,
-                    start: new Date(event.startTime).toISOString(),
-                    end: new Date(event.endTime).toISOString(),
-                    allDay: event.allDay,
-                    backgroundColor: "#3788d8",
-                    borderColor: "#2c6cb2",
-                    textColor: "#ffffff",
-                  })) || []
+                  selectedCalendarEvents
+                    ?.map((event) => {
+                      const startDate = formatDate(event.startTime);
+                      const endDate = formatDate(event.endTime);
+
+                      if (!startDate || !endDate) return null;
+
+                      return {
+                        id: event.eventId,
+                        title: event.title,
+                        start: startDate,
+                        end: endDate,
+                        allDay: event.allDay,
+                        backgroundColor: "#3788d8",
+                        borderColor: "#2c6cb2",
+                        textColor: "#ffffff",
+                      };
+                    })
+                    .filter(
+                      (event): event is NonNullable<typeof event> =>
+                        event !== null,
+                    ) || []
                 }
                 headerToolbar={{
                   left: "prev,next today",
